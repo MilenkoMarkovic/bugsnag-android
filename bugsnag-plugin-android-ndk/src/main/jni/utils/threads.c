@@ -34,6 +34,30 @@ void path_for_tid_stat(char *dest, const char *tid) {
 }
 
 /**
+ * Possible task states as defined in:
+ * https://github.com/torvalds/linux/blob/v5.13/fs/proc/array.c#L132-L143
+ */
+static const char *const task_state_array[] = {
+    "R running", "S sleeping", "D disk sleep", "T stopped", "t tracing stop",
+    "X dead",    "Z zombie",   "P parked",     "I idle",
+};
+
+void get_task_state_description(const char code, char *dest) {
+  for (size_t index = 0; index < (sizeof(task_state_array) / sizeof(char *));
+       index++) {
+    if (task_state_array[index][0] == code) {
+      bsg_strcpy(dest, &task_state_array[index][2]);
+      return;
+    }
+  }
+
+  // if we reached here we failed to map the code, store the single-character
+  // code as a fallback
+  dest[0] = code;
+  dest[1] = '\0';
+}
+
+/**
  * Parses the content of a /proc/self/task/{tid}/stat file, as documented in:
  * https://man7.org/linux/man-pages/man5/proc.5.html
  *
@@ -97,7 +121,7 @@ bool parse_stat_content(bsg_thread *dest, char *content, size_t len) {
       }
       break;
     case PARSE_STATUS:
-      dest->state = current;
+      get_task_state_description(current, dest->state);
       state = PARSE_DONE;
       break;
     case PARSE_DONE:
