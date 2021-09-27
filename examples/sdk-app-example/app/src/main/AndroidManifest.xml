@@ -39,6 +39,6 @@
             -->
         <meta-data
             android:name="com.bugsnag.android.API_KEY"
-            android:value="your-api-key" />
+            android:value="402aea7eb00884f21be62851443cd208" />
     </application>
 </manifest>
